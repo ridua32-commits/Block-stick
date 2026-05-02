@@ -12,7 +12,7 @@ export default defineConfig(({ mode }) => {
       tailwindcss(),
       VitePWA({
         registerType: 'autoUpdate',
-        includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'mask-icon.svg'],
+        includeAssets: ['logo.svg'],
         manifest: {
           name: 'Block Blast Master',
           short_name: 'BlockBlast',
@@ -20,7 +20,14 @@ export default defineConfig(({ mode }) => {
           theme_color: '#4A60B3',
           background_color: '#4A60B3',
           display: 'standalone',
-          icons: []
+          icons: [
+            {
+              src: 'logo.svg',
+              sizes: '512x512',
+              type: 'image/svg+xml',
+              purpose: 'any maskable'
+            }
+          ]
         },
         workbox: {
           runtimeCaching: [

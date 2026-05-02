@@ -83,6 +83,10 @@ export default function App() {
     const saved = localStorage.getItem('block-blast-highscore');
     return saved ? parseInt(saved, 10) : 0;
   });
+  const [scoreHistory, setScoreHistory] = useState<number[]>(() => {
+    const saved = localStorage.getItem('block-blast-history');
+    return saved ? JSON.parse(saved) : [];
+  });
   const [isNewHighScore, setIsNewHighScore] = useState(false);
   const [lastBlastMsg, setLastBlastMsg] = useState<{ text: string, id: number } | null>(null);
   const [combo, setCombo] = useState(0);
@@ -333,6 +337,13 @@ export default function App() {
   }, [generatePieces, soundEnabled, vibrationEnabled]);
 
   const restartGame = useCallback(() => {
+    if (score > 0) {
+      setScoreHistory(prev => {
+        const next = [...prev, score].sort((a, b) => b - a).slice(0, 5);
+        localStorage.setItem('block-blast-history', JSON.stringify(next));
+        return next;
+      });
+    }
     setGrid(Array(GRID_SIZE).fill(null).map(() => Array(GRID_SIZE).fill(null)));
     setScore(0);
     setCombo(0);
@@ -344,7 +355,21 @@ export default function App() {
     setFloatingScores([]);
     setActiveGhost(null);
     generatePieces();
-  }, [generatePieces]);
+  }, [generatePieces, score]);
+
+  const handleShare = () => {
+    const text = `I just scored ${score} points in Block Blast Master! Can you beat my high score of ${highScore}? 🧱🔥`;
+    if (navigator.share) {
+      navigator.share({
+        title: 'Block Blast Master',
+        text: text,
+        url: window.location.href,
+      }).catch(console.error);
+    } else {
+      navigator.clipboard.writeText(text);
+      alert('Score copied to clipboard!');
+    }
+  };
 
   return (
     <div className={`min-h-screen bg-[#4A60B3] text-white flex flex-col items-center font-sans select-none overflow-hidden relative`}>
@@ -393,12 +418,26 @@ export default function App() {
             </div>
 
             {/* High Score Card */}
-            <div className="bg-black/20 backdrop-blur-sm px-8 py-6 rounded-3xl border-2 border-white/10 mb-12 flex flex-col items-center gap-2 shadow-xl">
-              <div className="flex items-center gap-2">
-                <Crown size={24} className="text-yellow-400 fill-yellow-400" />
-                <span className="text-white/60 font-bold tracking-widest text-xs uppercase">BEST SCORE</span>
+            <div className="bg-black/20 backdrop-blur-sm px-8 py-6 rounded-3xl border-2 border-white/10 mb-8 flex flex-col items-center gap-4 shadow-xl w-full">
+              <div className="flex flex-col items-center gap-1">
+                <div className="flex items-center gap-2">
+                  <Crown size={24} className="text-yellow-400 fill-yellow-400" />
+                  <span className="text-white/60 font-bold tracking-widest text-xs uppercase">BEST SCORE</span>
+                </div>
+                <span className="text-6xl font-black text-white drop-shadow-md">{highScore}</span>
               </div>
-              <span className="text-5xl font-black text-white drop-shadow-md">{highScore}</span>
+              
+              {scoreHistory.length > 0 && (
+                <div className="w-full border-t border-white/10 pt-4 flex flex-col gap-2">
+                  <div className="text-[10px] text-white/40 font-bold uppercase tracking-widest text-center">Recent Top Scores</div>
+                  {scoreHistory.map((s, i) => (
+                    <div key={i} className="flex justify-between items-center text-sm px-4">
+                      <span className="text-white/40 font-mono">#{i + 1}</span>
+                      <span className="text-white/90 font-bold">{s}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
 
             {/* Play Button */}
@@ -689,7 +728,14 @@ export default function App() {
                 )}
               </div>
               
-              <div className="flex flex-col gap-3">
+            <div className="flex flex-col gap-3">
+                <button 
+                  onClick={handleShare}
+                  className="w-full bg-blue-500 hover:bg-blue-400 text-white font-black py-4 rounded-xl transition-all shadow-lg active:scale-95 flex items-center justify-center gap-2"
+                >
+                  <Zap size={20} fill="currentColor" />
+                  SHARE SCORE
+                </button>
                 <button 
                   onClick={() => {
                     playSynthSound('click', soundEnabled);
