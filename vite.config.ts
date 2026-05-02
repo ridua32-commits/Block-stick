@@ -20,24 +20,7 @@ export default defineConfig(({ mode }) => {
           theme_color: '#4A60B3',
           background_color: '#4A60B3',
           display: 'standalone',
-          icons: [
-            {
-              src: 'pwa-192x192.png',
-              sizes: '192x192',
-              type: 'image/png'
-            },
-            {
-              src: 'pwa-512x512.png',
-              sizes: '512x512',
-              type: 'image/png'
-            },
-            {
-              src: 'pwa-512x512.png',
-              sizes: '512x512',
-              type: 'image/png',
-              purpose: 'any maskable'
-            }
-          ]
+          icons: []
         },
         workbox: {
           runtimeCaching: [
